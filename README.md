@@ -54,9 +54,9 @@ and any command you issue will be mirrored to both.
 
 In its current version, `thmap` supports the following commands:
 
-* spawn a job:            spawn('th', {'script.lua', 'opt1', 'opt2', ...}, {autorestart=true})
-* restart running jobs:   restart()
-* list running jobs:      ps()
-* exec git command:       git 'pull'  /  git 'status'
-* git pull + restart:     update()
-* kill all zombies:       zombies()
+* spawn a job:            `spawn('th', {'script.lua', 'opt1', 'opt2', ...}, {autorestart=true})`
+* restart running jobs:   `restart()`
+* list running jobs:      `ps()`
+* exec git command:       `git 'pull'  /  git 'status'`
+* git pull + restart:     `update()`
+* kill all zombies:       `zombies()`

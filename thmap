@@ -1,0 +1,42 @@
+#!/usr/bin/env luajit
+
+-- libs
+require 'trepl'
+local async = require 'async'
+local repl = async.repl
+
+-- options
+local opt = lapp([[
+thmap: map jobs onto th nodes
+   --config  (default default)  path to configuration file
+]])
+
+-- config provided?
+local config
+if opt.config ~= 'default' then
+   -- load user config:
+   config = dofile(opt.config)
+else
+   -- default configuration:
+   config = {
+      -- only one node in default config:
+      {host='localhost', port=10001}
+   }
+end
+
+-- summary
+print [[
+thmap>
+  + spawn a job:            spawn('th', {'script.lua', 'opt1', 'opt2', ...}, {autorestart=true})
+  + restart running jobs:   restart()
+  + list running jobs:      ps()
+  + exec git command:       git 'pull'  /  git 'status'
+  + git pull + restart:     update()
+  + kill all zombies:       zombies()
+]]
+
+-- Connect to all nodes:
+repl.connectn(config)
+
+-- start event loop
+async.go()

@@ -1,0 +1,153 @@
+#!/usr/bin/env luajit
+
+-- async
+require 'trepl'
+require 'pl'
+local async = require 'async'
+
+-- options
+local opt = lapp([[
+thnode: a Torch compute node
+   --port  (default 10001)  port to listen to
+]])
+
+-- handles to jobs spawned, plus their options:
+local handles = {}
+local hoptions = {}
+
+-- logs
+local c = async.repl.colorize
+local hostname = 'localhost'
+function log(instance,data)
+   local lines = stringx.split(data,'\n')
+   for _,line in ipairs(lines) do
+      if line == '' or (line and line:find('idle$')) then
+      else
+         -- log line:
+         local line = string.format('%s> %s> %s', c.Black(hostname), c.blue(instance), c.green(line))
+         print(line)
+      end
+   end
+end
+
+-- spawn kernel
+local spawnid = 1
+function spawn(process,procoptions,options)
+   -- options
+   options = options or {}
+   procoptions = procoptions or {}
+
+   -- generate or get name:
+   local name = options.name or (process .. '_' ..spawnid)
+   if not options.name then spawnid = spawnid + 1 end
+   options.name = name
+
+   -- spawn job:
+   async.process.spawn(process, procoptions, function(handle,err)
+      -- failed?
+      if not handle then
+         log('master', 'failed launching kernel ' .. name, err)
+      else
+         -- spawned:
+         log('master', 'spawned kernel: ' .. name)
+
+         -- save handle:
+         handles[name] = handle
+         hoptions[name] = options
+
+         -- on data/err:
+         handle.stdout.ondata(function(data)
+            log(name,data)
+         end)
+         handle.stderr.ondata(function(data)
+            log(name,data)
+         end)
+
+         -- on exit, auto-restart:
+         handle.onexit(function(status)
+            -- clear:
+            log(name, 'died with status: '..status)
+            handles[name] = nil
+            hoptions[name] = nil
+
+            -- respawn:
+            if options.autorestart or options.restartonce then
+               options.restartonce = nil
+               log(name, 'automaticall restarting')
+               spawn(process,procoptions,options)
+            end
+         end)
+      end
+   end)
+end
+
+-- restart all == kill all + autorestart option
+function restart()
+   log('master','restarting all jobs')
+   for h,handle in pairs(handles) do
+      hoptions[h].restartonce = true
+      handle.kill()
+   end
+end
+
+-- ps
+function ps()
+   log('master','ps:')
+   for h,handle in pairs(handles) do
+      log('master', h)
+   end
+end
+
+-- git
+function git(arg,cb)
+   async.process.exec('git', {arg}, function(res)
+      log('master',res)
+      if cb then cb() end
+   end)
+end
+
+-- update code + restart
+function update()
+   git('pull', restart)
+end
+
+-- kill zombies
+function zombies()
+   local f = io.popen('ps -ef | grep luajit')
+   local res = f:read('*all')
+
+   local lines = stringx.split(res, '\n')
+   local parsed = {}
+   for _,line in ipairs(lines) do
+      local _,_,e1,e2,e3 = line:find('(.-)%s+(.-)%s+(.-)%s+')
+      if e1 and not line:find('grep') then
+         table.insert(parsed, {user=e1, pid=tonumber(e2), ppid=tonumber(e3)})
+      end
+   end
+   log('master','found ' .. (#parsed-1) .. ' LuaJIT processes')
+
+   local count = 0
+   for _,parsed in ipairs(parsed) do
+      if parsed.ppid == 1 then
+         log('master','process ' .. parsed.pid .. ' is a zombie')
+         count = count + 1
+         os.execute('kill -9 ' .. parsed.pid)
+         log('master','killed!')
+      end
+   end
+   log('master','found and killed ' .. count .. ' zombies')
+end
+
+-- Remote command line:
+local port = opt.port
+while true do
+   local ok = pcall(function()
+      async.repl.listen({host='0.0.0.0', port=port})
+   end)
+   if ok then break end
+   port = port + 1
+end
+print('thnode> waiting for jobs @ localhost:' .. port)
+
+-- go
+async.go()

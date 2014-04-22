@@ -3,6 +3,16 @@ THMAP
 
 A simple distributed framework to map jobs/work onto multiple workers.
 
+The framework provides two binaries: `thmap` and `thnode`. `thmap` is a controller,
+that lets you mirror commands to multiple `thnode` instances, and absorb the output
+of all these `thnode` instances in //.
+
+The general philosophy is that you run a bunch of `thnode` instances on multiple machines,
+then run `thmap` everytime you need to schedule/run new scripts onto these nodes.
+
+`thmap` lets you git pull, and reload scripts, so that you can easily update a 
+distributed code base.
+
 Install
 -------
 

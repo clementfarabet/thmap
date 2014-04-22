@@ -8,17 +8,17 @@ local repl = async.repl
 -- options
 local opt = lapp([[
 thmap: map jobs onto th nodes
-   --config  (default default)  path to configuration file
+   --nodes  (default default)  path to configuration file
 ]])
 
 -- config provided?
-local config
-if opt.config ~= 'default' then
-   -- load user config:
-   config = dofile(opt.config)
+local nodes 
+if opt.nodes ~= 'default' then
+   -- load user nodes:
+   nodes = dofile(opt.nodes)
 else
-   -- default configuration:
-   config = {
+   -- default nodes:
+   nodes = {
       -- only one node in default config:
       {host='localhost', port=10001}
    }
@@ -36,7 +36,7 @@ thmap>
 ]]
 
 -- Connect to all nodes:
-repl.connectn(config)
+repl.connectn(nodes)
 
 -- start event loop
 async.go()

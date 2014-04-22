@@ -29,7 +29,7 @@ On the compute machine(s), run `thnode`:
 thnode
 ```
 
-Write a config file that lists all the available nodes (`config.lua`):
+Write a config file that lists all the available nodes (`nodes.lua`):
 
 ```lua
 -- example configuration, with two nodes:
@@ -44,7 +44,7 @@ return {
 Then start `thmap` to start monitoring and dispatching jobs:
 
 ```sh
-thmap
+thmap --nodes nodes.lua
 ip1:10001> ip2:10002> spawn('th', {'test.lua'})
 ...
 ```

@@ -9,6 +9,7 @@ local async = require 'async'
 local opt = lapp([[
 thnode: a Torch compute node
    --port  (default 10001)  port to listen to
+   --run   (default none)   run a script (typically to provide functionality)
 ]])
 
 -- handles to jobs spawned, plus their options:
@@ -136,6 +137,11 @@ function zombies()
       end
    end
    log('master','found and killed ' .. count .. ' zombies')
+end
+
+-- script?
+if opt.run ~= 'none' then
+   dofile(opt.run)
 end
 
 -- Remote command line:

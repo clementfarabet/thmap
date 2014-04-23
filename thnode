@@ -8,13 +8,15 @@ local async = require 'async'
 -- options
 local opt = lapp([[
 thnode: a Torch compute node
-   -p,--port   (default 10001)  port to listen to
-   -l,--load   (default none)   run a script (typically to provide functionality)
+   -p,--port       (default 10001)  port to listen to
+   -l,--load       (default none)   run a script (typically to provide functionality)
+   -k,--killdelay  (default 0)      kills (and restarts) job after N seconds of idleness
 ]])
 
 -- handles to jobs spawned, plus their options:
 local handles = {}
 local hoptions = {}
+local activity = {}
 
 -- logs
 local c = async.repl.colorize
@@ -27,8 +29,31 @@ function log(instance,data)
          -- log line:
          local line = string.format('%s> %s> %s', c.Black(hostname), c.blue(instance), c.green(line))
          print(line)
+         
+         -- log activity:
+         if opt.killdelay > 0 then
+            activity[instance] = (activity[instance] or 0) + 1
+         end
       end
    end
+end
+
+-- log activity:
+if opt.killdelay > 0 then
+   async.setInterval(1000*opt.killdelay, function()
+      for instance,count in pairs(activity) do
+         -- no activity...
+         if instance ~= 'master' and count == 0 then
+            -- restarting:
+            addlog(instance, 'job stalled, restarting...')
+            hoptions[instance].restartonce = true
+            handles[instance].kill()
+         end
+
+         -- reset:
+         activity[instance] = 0
+      end
+   end)
 end
 
 -- spawn kernel

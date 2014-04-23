@@ -30,6 +30,7 @@ print [[
 thmap>
   + spawn a job:            spawn('th', {'script.lua', 'opt1', 'opt2', ...}, {autorestart=true})
   + restart running jobs:   restart()
+  + kill all running jobs:  killall()
   + list running jobs:      ps()
   + exec git command:       git 'pull'  /  git 'status'
   + git pull + restart:     update()

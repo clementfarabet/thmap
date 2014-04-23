@@ -45,9 +45,11 @@ if opt.killdelay > 0 then
          -- no activity...
          if instance ~= 'master' and count == 0 then
             -- restarting:
-            log(instance, 'job stalled, restarting...')
-            hoptions[instance].restartonce = true
-            handles[instance].kill()
+            if handles[instance] then
+               log(instance, 'job stalled, restarting...')
+               hoptions[instance].restartonce = true
+               handles[instance].kill()
+            end
          end
 
          -- reset:

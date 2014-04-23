@@ -116,6 +116,14 @@ function restart()
    end
 end
 
+-- kill all == just killall
+function killall()
+   log('master','restarting all jobs')
+   for h,handle in pairs(handles) do
+      handle.kill()
+   end
+end
+
 -- ps
 function ps()
    log('master','ps:')

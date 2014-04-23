@@ -9,6 +9,7 @@ local repl = async.repl
 local opt = lapp([[
 thmap: map jobs onto th nodes
    -n,--nodes  (default default)  path to configuration file
+   -x,--mute                      mute node stdout streams
 ]])
 
 -- config provided?
@@ -36,7 +37,9 @@ thmap>
 ]]
 
 -- Connect to all nodes:
-repl.connectn(nodes)
+repl.connectn(nodes, {
+   mute = opt.mute
+})
 
 -- start event loop
 async.go()

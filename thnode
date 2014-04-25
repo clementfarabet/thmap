@@ -99,8 +99,9 @@ function spawn(process,procoptions,options)
             hoptions[name] = nil
 
             -- respawn:
-            if options.autorestart or options.restartonce then
+            if (options.autorestart or options.restartonce) and not options.dontrestart then
                options.restartonce = nil
+               options.dontrestart = nil
                log(name, 'automaticall restarting')
                spawn(process,procoptions,options)
             end
@@ -122,6 +123,7 @@ end
 function killall()
    log('master','restarting all jobs')
    for h,handle in pairs(handles) do
+      hoptions[h].dontrestart = true
       handle.kill()
    end
 end

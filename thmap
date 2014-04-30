@@ -38,7 +38,7 @@ thmap>
 ]]
 
 -- Connect to all nodes:
-repl.connect(nodes, {
+repl.connectn(nodes, {
    mute = opt.mute
 })
 

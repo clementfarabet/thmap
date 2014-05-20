@@ -12,12 +12,20 @@ return function(opt)
 
    local thnode = {}
 
-   thnode.logpreprocess = function(instance, data)
+
+   ---------------------------------------------------------------------------------
+   -- functions to override for additional flexibility.  this feels kind of hacky...
+   ---------------------------------------------------------------------------------
+   
+   local logpreprocess = function(instance, data)
       return true
    end
 
-   thnode.newprocess = function(instance)
+   local newprocess = function(name)
    end
+   
+   ---------------------------------------------------------------------------------
+
 
    local function log(instance,data)
       local lines = stringx.split(data,'\n')
@@ -83,7 +91,7 @@ return function(opt)
 
             -- on data/err:
             handle.stdout.ondata(function(data)
-               if logpreprocess(name,data) then
+               if thnode.logpreprocess(name,data) then
                   log(name,data)
                end
             end)
@@ -106,7 +114,7 @@ return function(opt)
                   spawn(process,procoptions,options)
                end
             end)
-            onnewprocess(name)
+            thnode.newprocess(name)
          end
       end)
    end
@@ -175,6 +183,18 @@ return function(opt)
          end
       end
       log('master','found and killed ' .. count .. ' zombies')
+   end
+
+
+
+   ---------------------------------
+   
+   function thnode.setlogpreprocess(cb)
+      logpreprocess = cb 
+   end
+
+   function thnode.onnewprocess(cb)
+      newprocess = cb 
    end
 
 

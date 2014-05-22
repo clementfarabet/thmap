@@ -23,6 +23,9 @@ return function(opt)
 
    local newprocess = function(name)
    end
+
+   local deadprocess = function(name)
+   end
    
    ---------------------------------------------------------------------------------
 
@@ -66,7 +69,7 @@ return function(opt)
 
    -- spawn kernel
    local spawnid = 1
-   function spawn(process,procoptions,options)
+   local function spawn(process,procoptions,options)
       -- options
       options = options or {}
       procoptions = procoptions or {}
@@ -91,7 +94,7 @@ return function(opt)
 
             -- on data/err:
             handle.stdout.ondata(function(data)
-               if thnode.logpreprocess(name,data) then
+               if logpreprocess(name,data) then
                   log(name,data)
                end
             end)
@@ -113,11 +116,14 @@ return function(opt)
                   log(name, 'automaticall restarting')
                   spawn(process,procoptions,options)
                end
+               deadprocess(name)
             end)
-            thnode.newprocess(name)
+            newprocess(name)
          end
       end)
    end
+
+   thnode.spawn = spawn
 
    -- restart all == kill all + autorestart option
    function thnode.restart()
@@ -195,6 +201,10 @@ return function(opt)
 
    function thnode.onnewprocess(cb)
       newprocess = cb 
+   end
+
+   function thnode.ondeadprocess(cb)
+      deadprocess = cb
    end
 
 

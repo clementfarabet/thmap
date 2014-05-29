@@ -109,6 +109,7 @@ return function(opt)
                handles[name] = nil
                hoptions[name] = nil
 
+               deadprocess(name)
                -- respawn:
                if (options.autorestart or options.restartonce) and not options.dontrestart then
                   options.restartonce = nil
@@ -116,7 +117,6 @@ return function(opt)
                   log(name, 'automaticall restarting')
                   spawn(process,procoptions,options)
                end
-               deadprocess(name)
             end)
             newprocess(name)
          end

@@ -15,6 +15,7 @@ thnode: a Torch compute node
 
 local node = thnode(opt)
 
+spawn = node.spawn
 restart = node.restart
 killall = node.killall
 ps = node.ps
